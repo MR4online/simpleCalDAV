@@ -42,8 +42,6 @@
 
 namespace SimpleCalDAV;
 
-use SimpleCalDAV\CalDAVClient;
-use SimpleCalDAV\CalDAVObject;
 
 class SimpleCalDAVClient {
 
@@ -127,15 +125,17 @@ class SimpleCalDAVClient {
 		
 		return $this->client->FindCalendars(true);
 	}
-	
+
 	/**
 	 * function setCalendar()
 	 *
 	 * Sets the actual calendar to work with
 	 *
 	 * Debugging:
-	 * @throws CalDAVException
-	 * For debugging purposes, just sorround everything with try { ... } catch (Exception $e) { echo $e->__toString(); exit(-1); }
+	 * @throws \Exception
+	 * For debugging purposes, just surround everything with try { ... } catch (Exception $e) { echo $e->__toString(); exit(-1); }
+     *
+     * @param $calendar CalDAVCalendar
 	 */
 	function setCalendar ( CalDAVCalendar $calendar )
 	{
@@ -174,7 +174,7 @@ class SimpleCalDAVClient {
 		else { $uid = $matches[1]; }
 	
 		// Does $this->url.$uid.'.ics' already exist?
-		$result = $this->client->GetEntryByHref( $this->url.$uid.'.ics' );
+		$this->client->GetEntryByHref( $this->url.$uid.'.ics' );
 		if ( $this->client->GetHttpResultCode() == '200' ) { throw new CalDAVException($this->url.$uid.'.ics already exists. UID not unique?', $this->client); }
 		else if ( $this->client->GetHttpResultCode() == '404' );
 		else throw new CalDAVException('Recieved unknown HTTP status', $this->client);
@@ -263,7 +263,7 @@ class SimpleCalDAVClient {
 	
 		// Does $href exist?
 		$result = $this->client->GetEntryByHref($href);
-		if(count($result) == 0) throw new CalDAVException('Can\'t find '.$href.'on server', $this->client);
+		if(count($result) == 0) throw new CalDAVException('Can\'t find '.$href.'on server', $this->client, 404);
 		
 		// $etag correct?
 		if($result[0]['etag'] != $etag) { throw new CalDAVException('Wrong entity tag. The entity seems to have changed.', $this->client); }
@@ -289,7 +289,7 @@ class SimpleCalDAVClient {
 	 *                GMT. If omitted the value is set to +infinity.
 	 *
 	 * Return value:
-	 * @return CalDAVObject[] (See CalDAVObject.php) , representing the found events.
+	 * @return array|CalDAVObject[] (See CalDAVObject.php) , representing the found events.
 	 *
 	 * Debugging:
 	 * @throws CalDAVException For debugging purposes, just sorround everything with try { ... } catch (Exception $e) { echo $e->__toString(); exit(-1); }
@@ -416,7 +416,7 @@ class SimpleCalDAVClient {
 	 * @param null|bool $cancelled - Filter for cancelled tasks (true) or for uncancelled tasks (false). If omitted, the function will return both.
 	 *
 	 * Return value:
-	 * @return CalDAVObject[] (See CalDAVObject.php), representing the found TODOs.
+	 * @return array|CalDAVObject[] (See CalDAVObject.php), representing the found TODOs.
 	 *
 	 * Debugging:
 	 * @throws CalDAVException For debugging purposes, just sorround everything with try { ... } catch (Exception $e) { echo $e->__toString(); exit(-1); }
@@ -462,7 +462,7 @@ class SimpleCalDAVClient {
 	 * @param string $filterXML The stuff, you want to send encapsulated in the <C:filter>-tag.
 	 *
 	 * Return value:
-	 * @return CalDAVObject[] (See CalDAVObject.php) , representing the found calendar resources.
+	 * @return array|CalDAVObject[] (See CalDAVObject.php) , representing the found calendar resources.
 	 *
 	 * Debugging:
 	 * @throws CalDAVException For debugging purposes, just sorround everything with try { ... } catch (Exception $e) { echo $e->__toString(); exit(-1); }
